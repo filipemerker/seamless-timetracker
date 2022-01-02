@@ -38,7 +38,7 @@
     "eject": "react-scripts eject",
     "precommit": "lint-staged"
   },
-  "homepage": "/react-pomodoro/",
+  "homepage": "/",
   "lint-staged": {
     "*.{js,json,css,md}": ["prettier --write", "git add"]
   }
