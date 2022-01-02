@@ -1,0 +1,457 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>React Pomodoro</title>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
+    <style type="text/css">
+      body {
+        background: #d9dadc;  /* fallback for old browsers */
+        background: -webkit-linear-gradient(to bottom, #f5f7f9, #d9dadc);  /* Chrome 10-25, Safari 5.1-6 */
+        background: linear-gradient(to bottom, #f5f7f9, #d9dadc); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+        font-family: Open Sans, arial, sans-serif;
+        margin: 0;
+      }
+
+      .app {
+        height: 100vh;
+        width: 100vw;
+      }
+
+      .timer {
+        width: 310px;
+        border-radius: 8px;
+        display: inline-block;
+        background-color: #f2f3f6;
+        box-shadow: 5px 5px 12px rgba(0, 0, 0, 0.13), 8px 8px 40px rgba(0, 0, 0, 0.12);
+        position: relative;
+        text-align: center;
+        color: #353849;
+        padding-bottom: 50px;
+      }
+
+      .play {
+        border: none;
+        height: 70px;
+        width: 70px;
+        border-radius: 50%;
+        position: absolute;
+        bottom: 0px;
+        left: 50%;
+        transform: translate(-50%, 50%);
+        overflow: hidden;
+        cursor: pointer;
+
+        background: #cf3845;  /* fallback for old browsers */
+        background: -webkit-linear-gradient(to bottom, #ea8379, #cf3845);  /* Chrome 10-25, Safari 5.1-6 */
+        background: linear-gradient(to bottom, #ea8379, #cf3845); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+        box-shadow: 0px 19px 20px -10px rgba(207, 56, 69, 0.38);
+
+        font-size: 20px;
+        color: white;
+      }
+
+      .play::before {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        
+        top: 13%;
+        left: 0px;
+        z-index: 0;
+        background: #cf3845;  /* fallback for old browsers */
+        background: -webkit-linear-gradient(to bottom, #eb6267, #cf3845);  /* Chrome 10-25, Safari 5.1-6 */
+        background: linear-gradient(to bottom, #eb6267, #cf3845); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+      }
+
+      .play.done {
+        background: #55ab6d;  /* fallback for old browsers */
+        background: -webkit-linear-gradient(to bottom, #83e2b7, #55ab6d);  /* Chrome 10-25, Safari 5.1-6 */
+        background: linear-gradient(to bottom, #83e2b7, #55ab6d); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+        box-shadow: 0px 19px 20px -10px rgba(85, 171, 79, 0.38);
+      }
+      .play.done::before {
+        background: #55ab6d;  /* fallback for old browsers */
+        background: -webkit-linear-gradient(to bottom, #65cd9e, #55ab6d);  /* Chrome 10-25, Safari 5.1-6 */
+        background: linear-gradient(to bottom, #65cd9e, #55ab6d); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+      }
+
+      .play > .fa {
+        position: relative;
+        z-index: 1;
+      }
+
+      .fa-play {
+        left: 3px;
+      }
+
+      .monitor {
+        margin-top: 35px;
+        display: inline-block;
+        width: 250;
+        height: 250px;
+        position: relative;
+      }
+
+      .clock {
+        font-size: 35px;
+        font-weight: 700;
+
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .label {
+        text-align: center;
+        box-sizing: border-box;
+        padding: 0px 30px;
+        font-size: 14px;
+        color: #74768a;
+        font-weight: 100;
+        margin-bottom: 9px;
+      }
+
+      h2 {
+        box-sizing: border-box;
+        padding: 0px 20px;
+        margin-bottom: -40px;
+        font-size: 33px;
+      }
+
+      .options {
+        height: 26px;
+        padding: 5px 0px 0px;
+        margin-bottom: -5px;
+        display: inline-block;
+
+        opacity: 0;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .options .option {
+        display: inline-block;
+        padding: 4px 10px;
+        background-color: #dedede;
+        color: #353849;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 300;
+      }
+
+      .options .option.active {
+        background-color: #e85e6a;
+        color: #ffffff;
+      }
+
+      .center-content {
+        display: -webkit-box;
+        display: -webkit-flex;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-box-align: center;
+        -webkit-align-items: center;
+        -ms-flex-align: center;
+        align-items: center;
+        -webkit-box-pack: center;
+        -webkit-justify-content: center;
+        -ms-flex-pack: center;
+        justify-content: center;
+      }
+
+      .timer-container {
+        /*background-color: blue;*/
+        width: 35%;
+        height: 100vh;
+        float: left;
+      }
+
+      .list-container {
+        /*background-color: green;*/
+        width:65%;
+        height: 100vh;
+        overflow-y: auto;
+        float: left;
+      }
+
+      .task-list {
+        width: 85%;
+        margin-right: 5%;
+        margin: 0 auto;
+        padding: 20px 0px;
+        color: #353849;
+      }
+
+      .section-title {
+        margin-bottom: 5px;
+      }
+
+      .task-list li {
+        width: 100%;
+        background-color: #f7f7f7;
+        padding: 20px 94px 20px 20px;
+        border-radius: 2px;
+        box-sizing: border-box;
+        box-shadow: 0px 3px 29px -9px rgba(0, 0, 0, 0.13);
+        margin: 1px 0px 0px 0px;
+
+        color: #74768a;
+      }
+
+      .list-finished {
+        opacity: .5;
+      }
+
+      .list {
+        margin-bottom: 40px;
+      }
+
+      .task-list li .title {
+        font-size: 16px;
+        margin: 0;
+        width: 100%;
+        font-weight: 300;
+      }
+      .task-list li .misc {
+        width: 100%;
+        margin-top: 11px;
+      }
+      .task-list li .misc .entry {
+        font-weight: 300;
+        font-size: 12px;
+        color: #a2a4b1;
+        display: inline-block;
+        margin-right: 20px;
+      }
+      .task-list li .misc .entry.running {
+        color: rgb(234, 83, 96);
+      }
+
+      .new-item {
+        width: 100%;
+        display: inline-block;
+        margin-bottom: 20px;
+      }
+
+      .title-container {
+        width: 65%;
+      }
+      .estimate-container {
+        width: 26.5%;
+        margin-left: .5%;
+      }
+      .button-container {
+        width: 7.5%;
+        margin-left: .5%;
+      }
+      .add-container {
+        float: left;
+        position: relative;
+      }
+      .add-container h2 {
+        width: 100%;
+        display: inline-block;
+        font-weight: 400;
+        font-size: 11px;
+        padding: 0px;
+        position: absolute;
+        top: -3px;
+        left: 8px;
+        color: #828388;
+      }
+      .new-item-title {
+        width: 100%;
+        display: inline-block;
+        background-color: transparent;
+        border: none;
+        border-radius: 3px;
+        background: #ffffff;
+        font-weight: 100;
+        font-size: 17px;
+        padding: 24px 8px 11px 8px;
+        margin-top: 0px;
+        color: #74768a;
+      }
+      .new-item-title::placeholder {
+        color: #b8b9c3;
+      }
+
+      .add-button {
+        background: #9ed2ad;
+        background: -webkit-linear-gradient(to bottom, #bde6d3, #9ed2ad);
+        background: linear-gradient(to bottom, #bde6d3, #9ed2ad);
+        box-shadow: 1px 3px 35px -4px rgba(85, 171, 79, 0.26);
+        display: inline-block;
+        width: 100%;
+        height: 56px;
+        border: none;
+        border-radius: 3px;
+        color: white;
+        font-size: 13px;
+        font-weight: 100;
+        cursor: pointer;
+      }
+
+    </style>
+  </head>
+  <body cz-shortcut-listen="true">
+    <div class="app">
+      <div class="timer-container center-content">
+        <div id="timer" class="timer">
+          <!--<h2>Well done!</h2>-->
+          <div class="monitor">
+            <div class="circle">
+              <svg class="CircularProgressbar " viewBox="0 0 100 100"><circle class="CircularProgressbar-background" cx="50" cy="50" r="50" style="fill: transparent;"></circle><path class="CircularProgressbar-trail" d="
+                    M 50,50
+                    m 0,-37.5
+                    a 37.5,37.5 0 1 1 0,75
+                    a 37.5,37.5 0 1 1 0,-75
+                  " stroke-width="5" fill-opacity="0" style="stroke: rgb(213, 215, 217); stroke-width: 1.5;"></path><path class="CircularProgressbar-path" d="
+                    M 50,50
+                    m 0,-37.5
+                    a 37.5,37.5 0 1 1 0,75
+                    a 37.5,37.5 0 1 1 0,-75
+                  " stroke-width="5" fill-opacity="0" style="stroke: rgb(96, 194, 141); stroke: rgb(234, 83, 96); stroke-width: 3; stroke-dasharray: 235.619px, 235.619px; stroke-dashoffset: 80px;"></path></svg>
+            </div>
+            <div class="clock"></div>
+          </div>
+          <div class="label">
+            <strong>Task:</strong> [APP/BACK] Mediação para solicitação de vínculo - OUTRAS REGRAS
+          </div>
+          <div class="options">
+            <ul>
+              <li class="option active">40 min</li>
+              <li class="option">5 min</li>
+              <li class="option">15 min</li>
+            </ul>
+          </div>
+          <button class="play">
+            <i class="fa fa-stop"></i>
+          </button>
+        </div>
+      </div>
+      <div class="list-container">
+        <div class="task-list">
+          <h3 class="section-title">New task</h3>
+          <section class="new-item">
+            <div class="add-container title-container">
+              <h2>What will you work on?</h2>
+              <input type="text" placeholder="Refactor chat messages using Redux" class="new-item-title" />
+            </div>
+            <div class="add-container estimate-container">
+              <h2>What's your time estimate?</h2>
+              <input type="text" placeholder="2h 20m" class="new-item-title" />
+            </div>
+            <div class="add-container button-container">
+              <button class="add-button">ADD</button>
+            </div>
+          </section>
+          <h3 class="section-title">Active</h3>
+          <ul class="list">
+            <li>
+              <div class="info">
+                <h3 class="title">[APP/BACK] Mediação para solicitação de vínculo - OUTRAS REGRAS</h3>
+                <div class="misc">
+                  <div class="planned entry"><strong>Time planned:</strong> 2h</div>
+                  <div class="spent entry"><strong>Time spent:</strong> <span id="test"></span></div>
+                  <div class="running entry"><strong>RUNNING</strong></div>
+                </div>
+              </div>
+            </li>
+            <li>
+              <div class="info">
+                <h3 class="title">Not get notification when app in background in android</h3>
+                <div class="misc">
+                  <div class="planned entry"><strong>Time planned:</strong> 4h</div>
+                  <div class="spent entry"><strong>Time spent:</strong> 23m 15s</div>
+                </div>
+              </div>
+            </li>
+            <li>
+              <div class="info">
+                <h3 class="title">onNotification handler not being fired</h3>
+                <div class="misc">
+                  <div class="planned entry"><strong>Time planned:</strong> 16h</div>
+                  <div class="spent entry"><strong>Time spent:</strong> 4h 12m</div>
+                </div>
+              </div>
+            </li>
+            <li>
+              <div class="info">
+                <h3 class="title">App crashing when opening remote notification (iOS)</h3>
+                <div class="misc">
+                  <div class="planned entry"><strong>Time planned:</strong> 8h</div>
+                  <div class="spent entry"><strong>Time spent:</strong> 1h 23m 15s</div>
+                </div>
+              </div>
+            </li>
+            <li>
+              <div class="info">
+                <h3 class="title">Notification not fired when device is locked or app in background</h3>
+                <div class="misc">
+                  <div class="planned entry"><strong>Time planned:</strong> 2h</div>
+                  <div class="spent entry"><strong>Time spent:</strong> 1h 23m 15s</div>
+                </div>
+              </div>
+            </li>
+            <li>
+              <div class="info">
+                <h3 class="title">When i create my release build push notifications doesn't shows up on android</h3>
+                <div class="misc">
+                  <div class="planned entry"><strong>Time planned:</strong> 2h</div>
+                  <div class="spent entry"><strong>Time spent:</strong> 1h 23m 15s</div>
+                </div>
+              </div>
+            </li>
+          </ul>
+          <h3 class="section-title">Finished</h3>
+          <ul class="list list-finished">
+            <li>
+              <h3 class="title">[APP/BACK] Mediação para solicitação de vínculo - OUTRAS REGRAS</h3>
+              <div class="misc">
+                <div class="planned entry"><strong>Time planned:</strong> 2h</div>
+                <div class="spent entry"><strong>Time spent:</strong> 1h 23m 15s</div>
+              </div>
+            </li>
+            <li>
+              <h3 class="title">[APP/BACK] Mediação para solicitação de vínculo - OUTRAS REGRAS</h3>
+              <div class="misc">
+                <div class="planned entry"><strong>Time planned:</strong> 2h</div>
+                <div class="spent entry"><strong>Time spent:</strong> 1h 23m 15s</div>
+              </div>
+            </li>
+            <li>
+              <h3 class="title">[APP/BACK] Mediação para solicitação de vínculo - OUTRAS REGRAS teste aqu icom linha quebrada se não fica horrível</h3>
+              <div class="misc">
+                <div class="planned entry"><strong>Time planned:</strong> 2h</div>
+                <div class="spent entry"><strong>Time spent:</strong> 1h 23m 15s</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
+<script>
+  var clock = document.querySelector('#timer .clock')
+  var misc = document.querySelector('#test')
+
+  setInterval(() => {
+    var date = new Date().toTimeString().split(" ")[0].split(":")
+
+    clock.innerHTML = `${date[1]} : ${date[2]}`
+    misc.innerHTML = `${date[1]} : ${date[2]}`
+  }, 1000)
+</script>

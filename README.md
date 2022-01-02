@@ -1,2 +1,1 @@
-# seamless-timetracker
-⏰ Pomodoro timer and time-tracker that lives on the browser.
+<h1 align="center">Seamless Time Tracker</h1>
