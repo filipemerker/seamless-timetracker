@@ -3,12 +3,15 @@ import styled from 'styled-components'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 
+import { setExpand } from 'modules/app'
 import { decrement, setMode } from 'modules/timer'
-import { incrementTaskTime } from 'modules/tasks'
+import { incrementTaskTime, incrementTaskPomodoro } from 'modules/tasks'
 import { store } from 'store'
 
 import Timer from './Timer'
 import Tasks from './Tasks'
+import worker from '../worker'
+
 import { getTimer } from 'utils'
 
 const ring = require('assets/ring.mp3')
@@ -26,13 +29,13 @@ class App extends Component {
     running: false,
     options: true,
     streak: [],
-    title: 'React Pomodoro',
+    title: 'React Timesaver - Time tracking for productivity',
 
     possibleActions: ['stop', 'play', 'check'],
     currentAction: 'play'
   }
 
-  interval = null
+  intervalWorker = null
 
   play = () => {
     const { decrement, mode, incrementTaskTime } = this.props
@@ -44,7 +47,9 @@ class App extends Component {
       streak: this.state.streak.concat(mode)
     })
 
-    this.interval = setInterval(() => {
+    this.intervalWorker = new Worker(worker)
+
+    this.intervalWorker.onmessage = () => {
       const { counter } = store.getState().timer
 
       if (counter <= 0) {
@@ -57,12 +62,19 @@ class App extends Component {
       document.title = `${getTimer(counter)} | ${this.state.title}`
       incrementTaskTime()
       decrement()
-    }, 1000)
+    }
   }
 
   finishCounter = () => {
+    const { mode, incrementTaskPomodoro } = this.props
     document.title = this.state.title
-    clearInterval(this.interval)
+
+    if (mode === 'pomodoro') {
+      incrementTaskPomodoro()
+    }
+    if (this.intervalWorker) {
+      this.intervalWorker.terminate()
+    }
 
     this.setState({
       currentAction: 'check',
@@ -81,8 +93,11 @@ class App extends Component {
       options: true
     })
 
+    if (this.intervalWorker) {
+      this.intervalWorker.terminate()
+    }
+
     document.title = this.state.title
-    clearInterval(this.interval)
     setMode(mode)
   }
 
@@ -111,6 +126,8 @@ class App extends Component {
 
   render = () => {
     const timerState = this.state
+    const { expand, setExpand } = this.props
+
     const timerActions = {
       play: this.play,
       stop: this.stop,
@@ -118,11 +135,14 @@ class App extends Component {
     }
     return (
       <Main className="App">
-        <TimerContainer>
-          <Timer timerState={timerState} timerActions={timerActions} />
+        <TimerContainer expand={expand}>
+          <button onClick={() => setExpand(expand ? null : 'timer')}>
+            {expand}
+          </button>
+          <Timer timerActions={timerActions} timerState={timerState} />
         </TimerContainer>
-        <TasksContainer>
-          <Tasks timerState={timerState} timerActions={timerActions} />
+        <TasksContainer expand={expand}>
+          <Tasks timerActions={timerActions} timerState={timerState} />
         </TasksContainer>
       </Main>
     )
@@ -132,10 +152,15 @@ class App extends Component {
 const Main = styled.main`
   height: 100vh;
   width: 100vw;
+
+  @media (max-width: 1000px) {
+    width: 100%;
+    height: auto;
+  }
 `
 
 const TimerContainer = styled.section`
-  width: 30%;
+  width: 35%;
   height: 100vh;
   float: left;
   background: linear-gradient(to bottom right, #c9d4e8, #e6bab8);
@@ -143,24 +168,61 @@ const TimerContainer = styled.section`
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+
+  transition: 0.85s all ease-in-out;
+  position: absolute;
+  z-index: 2;
+  left: 0px;
+  top: 0px;
+
+  ${props => props.expand === 'timer' && 'width: 100%; height: 100vh;'};
+
+  @media (max-width: 1000px) {
+    ${props => props.expand !== 'timer' && 'height: auto;'};
+    width: 100%;
+    position: relative;
+  }
 `
 
 const TasksContainer = styled.section`
-  width: 70%;
+  width: 65%;
   height: 100vh;
   float: left;
-  overflow-y: auto;
+  opacity: 1;
+  overflow-y: scroll;
+
+  transition: 0.5s all ease-in-out;
+  position: absolute;
+  z-index: 1;
+  right: 0px;
+  top: 0px;
+
+  ${props => props.expand === 'timer' && 'opacity: 0;'};
+
+  @media (max-width: 1000px) {
+    ${props => props.expand === 'timer' && 'height: 0px;'};
+    ${props => props.expand !== 'timer' && 'height: auto;'};
+    overflow-y: auto;
+    width: 100%;
+    position: relative;
+    z-index: 10;
+  }
 `
 
 const mapStateToProps = state => ({
   counter: state.timer.counter,
+  current: state.tasks.current,
+  expand: state.app.expand,
   mode: state.timer.mode
 })
 
 const mapDispatchToProps = dispatch =>
   bindActionCreators(
     {
+      incrementTaskPomodoro,
       incrementTaskTime,
+      setExpand,
       decrement,
       setMode
     },

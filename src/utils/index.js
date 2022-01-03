@@ -81,11 +81,6 @@ export const timeParser = humanTime => {
   })
 }
 
-export const id = () =>
-  Math.random()
-    .toString(36)
-    .substr(2, 13)
-
 export const getTimer = (counter, { extraSpace } = {}) => {
   const zeroPad = value => `0${value}`.slice(-2)
   const minutes = zeroPad(parseMs(counter).minutes)
@@ -93,4 +88,31 @@ export const getTimer = (counter, { extraSpace } = {}) => {
   const separator = extraSpace ? ' : ' : ':'
 
   return minutes + separator + seconds
+}
+
+export const getToday = () => {
+  const date = new Date()
+  date.setHours(0, 0, 0, 0)
+
+  return date.getTime()
+}
+
+export const removeProdConsole = () => {
+  function noop() {}
+
+  if (process.env.NODE_ENV !== 'development') {
+    console.log = noop
+    console.warn = noop
+    console.error = noop
+  }
+}
+
+export const id = () => {
+  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+    // eslint-disable-next-line no-mixed-operators
+    (
+      c ^
+      (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
+    ).toString(16)
+  )
 }

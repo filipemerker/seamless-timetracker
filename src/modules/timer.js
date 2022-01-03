@@ -11,7 +11,7 @@ const initialState = Immutable({
   mode: 'pomodoro',
   config: {
     pomodoro: {
-      duration: 2700000,
+      duration: 1800000,
       label: 'Pomodoro'
     },
     short: {
@@ -19,7 +19,7 @@ const initialState = Immutable({
       label: 'Short break'
     },
     long: {
-      duration: 900000,
+      duration: 600000,
       label: 'Long break'
     }
   }
@@ -53,6 +53,20 @@ export const decrement = () => (dispatch, getState) => {
   dispatch({
     type: UPDATE_COUNTER,
     counter: counter - 1000
+  })
+}
+
+export const setConfig = config => (dispatch, getState) => {
+  const { mode } = getState().timer
+  const counter = config[mode].duration
+
+  dispatch({
+    type: UPDATE_CONFIG,
+    config
+  })
+  dispatch({
+    type: UPDATE_COUNTER,
+    counter
   })
 }
 

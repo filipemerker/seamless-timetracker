@@ -4,8 +4,11 @@ import { Provider } from 'react-redux'
 import { persistor, store } from './store'
 import App from './containers'
 import { PersistGate } from 'redux-persist/lib/integration/react'
+import { removeProdConsole } from 'utils'
 
 import './index.css'
+
+removeProdConsole()
 
 const target = document.querySelector('#root')
 

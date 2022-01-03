@@ -11,12 +11,14 @@
   "dependencies": {
     "@sindresorhus/to-milliseconds": "^1.0.0",
     "animated": "^0.2.2",
+    "lodash.get": "^4.4.2",
     "parse-ms": "^2.0.0",
     "prop-types": "^15.6.1",
     "react": "^16.2.0",
     "react-addons-css-transition-group": "^15.6.2",
     "react-autocomplete": "^1.8.1",
     "react-circular-progressbar": "^1.0.0",
+    "react-click-outside": "^3.0.1",
     "react-dom": "^16.2.0",
     "react-redux": "^5.0.6",
     "react-router": "^4.2.0",
@@ -40,6 +42,9 @@
   },
   "homepage": "/",
   "lint-staged": {
-    "*.{js,json,css,md}": ["prettier --write", "git add"]
+    "*.{js,json,css,md}": [
+      "prettier --write",
+      "git add"
+    ]
   }
 }

@@ -3,13 +3,15 @@ import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import styled from 'styled-components'
 
+import Tags from 'components/Tags'
 import { createTask } from 'modules/tasks'
 import { timeParser } from 'utils'
 
 class NewTask extends Component {
   state = {
     title: '',
-    estimate: ''
+    estimate: '',
+    tags: []
   }
 
   hasValue = () => this.state.title.trim().length
@@ -23,17 +25,19 @@ class NewTask extends Component {
   }
 
   addTask = () => {
-    const { title, estimate } = this.state
+    const { title, estimate, tags } = this.state
     const { createTask } = this.props
 
     createTask({
       title,
+      tags,
       estimate: timeParser(estimate)
     })
 
     this.setState({
       title: '',
-      estimate: ''
+      estimate: '',
+      tags: []
     })
   }
 
@@ -45,10 +49,17 @@ class NewTask extends Component {
     })
   }
 
-  render = () => {
+  render() {
     return (
       <NewItemForm onSubmit={this.onSubmit}>
-        <InputContainer width="65%">
+        <InputContainer width={{ desktop: '65%', mobile: '100%' }}>
+          <TagsHolder>
+            <Tags
+              setValue={tags => this.setState({ tags })}
+              selectedTags={this.state.tags}
+            />
+          </TagsHolder>
+
           <InputTitle>What will you be working on?</InputTitle>
           <Input
             type="text"
@@ -58,7 +69,7 @@ class NewTask extends Component {
             placeholder="Ex: Fix the profile page layout proportions"
           />
         </InputContainer>
-        <InputContainer width="27.5%">
+        <InputContainer width={{ desktop: '27.5%', mobile: '80%' }}>
           <InputTitle>What's your time estimate?</InputTitle>
           <Input
             name="estimate"
@@ -68,7 +79,7 @@ class NewTask extends Component {
             placeholder="2h 20m"
           />
         </InputContainer>
-        <InputContainer width="7.5%">
+        <InputContainer width={{ desktop: '7.5%', mobile: '20%' }}>
           <Submit
             active={this.hasValue()}
             type="submit"
@@ -81,6 +92,12 @@ class NewTask extends Component {
   }
 }
 
+const TagsHolder = styled.div`
+  position: absolute;
+  right: 0px;
+  top: -27px;
+`
+
 const NewItemForm = styled.form`
   width: 100%;
   display: inline-block;
@@ -92,12 +109,21 @@ const InputContainer = styled.div`
   float: left;
   position: relative;
 
-  width: ${props => props.width};
+  width: ${props => props.width.desktop};
 
-  &:first-child input {
+  &:first-child > input {
     box-shadow: inset 0 -1px 0 0 #e8e8e8;
     border-top-left-radius: 3px;
     border-bottom-left-radius: 3px;
+  }
+
+  @media (max-width: 700px) {
+    width: ${props => props.width.mobile};
+
+    &:first-child > input {
+      box-shadow: inset 0px 0px 0 1px #e8e8e8;
+      border-radius: 0px;
+    }
   }
 `
 
@@ -155,6 +181,10 @@ const Submit = styled.input`
     opacity: .6;
     cursor: default;
   `};
+
+  @media (max-width: 700px) {
+    border-radius: 0px;
+  }
 `
 
 const mapDispatchToProps = dispatch =>

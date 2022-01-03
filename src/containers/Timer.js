@@ -6,10 +6,15 @@ import styled from 'styled-components'
 import CircularProgressbar from 'react-circular-progressbar'
 import 'react-circular-progressbar/dist/styles.css'
 
-import { decrement, setMode } from 'modules/timer'
+import { decrement, setMode, setConfig } from 'modules/timer'
 import { getTimer } from 'utils'
 
 class Timer extends Component {
+  state = {
+    configModal: false,
+    config: { ...this.props.config }
+  }
+
   action = () => {
     const { currentAction } = this.props.timerState
     const { timerActions } = this.props
@@ -20,7 +25,7 @@ class Timer extends Component {
   getPercentage = () => {
     const { counter, mode, config } = this.props
 
-    return 100 - counter / config[mode].duration * 100
+    return 100 - (counter / config[mode].duration) * 100
   }
 
   getGreeting = (mode, finished, config) => {
@@ -34,26 +39,54 @@ class Timer extends Component {
       return {
         pomodoro: (
           <div>
-            <strong>Congratulations!</strong> You worked a lot, get some rest!
+            <strong>Congratulations!</strong>{' '}
+            <Motivation>You worked a lot, get some rest!</Motivation>
           </div>
         ),
         short: (
           <div>
-            <strong>Well done!</strong> You got some rest, now let's get back to
-            work.
+            <strong>Well done!</strong>{' '}
+            <Motivation>
+              You got some rest, now let's get back to work.
+            </Motivation>
           </div>
         ),
         long: (
           <div>
-            <strong>Well done!</strong> Are you ready for the hard work?
+            <strong>Well done!</strong>{' '}
+            <Motivation>Are you ready for the hard work?</Motivation>
           </div>
         )
       }[mode]
     }
   }
 
+  updateConfig = ({ target }) => {
+    const { name, value } = target
+    const { config } = this.state
+    const updated = {
+      duration: Number(value) * 60000,
+      label: config[name].label
+    }
+
+    if (value >= 0 && value <= 60) {
+      this.setState({
+        config: {
+          ...config,
+          ...{ [name]: updated }
+        }
+      })
+    }
+  }
+
+  saveConfig = (e, mode) => {
+    this.setState({ configModal: false })
+    this.props.setConfig(this.state.config)
+  }
+
   render = () => {
     const { finished, currentAction, options } = this.props.timerState
+    const { configModal } = this.state
     const {
       currentTask,
       openTasks,
@@ -62,14 +95,20 @@ class Timer extends Component {
       config,
       mode: activeMode
     } = this.props
+
     const modes = Object.keys(config)
     const current = openTasks.find(task => task.id === currentTask)
 
     return (
       <TimerBox optionsVisible={options}>
-        <Label className="fixed-height" active>
-          {this.getGreeting(activeMode, finished, config)}
-        </Label>
+        <TimerHeader>
+          <Label className="fixed-height" active>
+            {this.getGreeting(activeMode, finished, config)}
+          </Label>
+          <Config onClick={() => this.setState({ configModal: true })}>
+            <i className="fa fa-cog" />
+          </Config>
+        </TimerHeader>
         <Monitor>
           {finished && (
             <Sonar>
@@ -81,7 +120,7 @@ class Timer extends Component {
             percentage={this.getPercentage()}
             styles={{
               path: {
-                stroke: finished ? 'rgb(96, 194, 141)' : 'rgb(232, 92, 99)',
+                stroke: finished ? 'rgb(96, 194, 141)' : 'rgb(215, 107, 107)',
                 strokeWidth: 3
               },
               trail: {
@@ -111,6 +150,36 @@ class Timer extends Component {
           ))}
         </Options>
 
+        {configModal && (
+          <ConfigModal>
+            <TimerHeader>
+              <Label className="fixed-height" active>
+                <strong>Settings</strong>
+              </Label>
+              <Config
+                onClick={() => this.setState({ configModal: false, config })}
+              >
+                <i className="fa fa-close" />
+              </Config>
+            </TimerHeader>
+            {modes.map((mode, i) => (
+              <ConfigItem key={`option${i}`}>
+                <label>{config[mode].label}</label>
+                <Input
+                  onChange={e => this.updateConfig(e, mode)}
+                  value={this.state.config[mode].duration / 60000}
+                  name={mode}
+                  type="number"
+                />
+              </ConfigItem>
+            ))}
+            <Save onClick={() => this.saveConfig()}>SAVE</Save>
+            <Disclaimer>
+              All values are in <strong>minutes</strong>
+            </Disclaimer>
+          </ConfigModal>
+        )}
+
         <Toggle onClick={this.action} finished={finished}>
           <i className={`fa fa-${currentAction}`} />
         </Toggle>
@@ -118,6 +187,73 @@ class Timer extends Component {
     )
   }
 }
+
+const ConfigModal = styled.section`
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  border-radius: 7px;
+  padding-top: 20px;
+  box-sizing: border-box;
+  background-color: #f2f3f6;
+  flex-direction: column;
+`
+
+const ConfigItem = styled.div`
+  justify-content: space-between;
+  display: flex;
+  margin: 10px 30px;
+
+  label {
+    color: #8e90a2;
+    font-weight: 100;
+  }
+  input {
+    width: 40px;
+    border-radius: 3px;
+  }
+`
+
+const Save = styled.div`
+  background: #d76b6b;
+  display: inline-block;
+  margin: 30px 25px 10px 28px;
+  line-height: 36px;
+  border-radius: 3px;
+  color: white;
+  cursor: pointer;
+  font-weight: 100;
+`
+
+const Disclaimer = styled.p`
+  line-height: 11px;
+  font-size: 11px;
+  font-weight: 100;
+  text-align: center;
+  margin-top: -1px;
+  color: #8e90a2;
+`
+
+const Input = styled.input`
+  display: inline-block;
+  border: none;
+  background: #fff;
+  font-weight: 100;
+  font-size: 15px;
+  box-sizing: border-box;
+  margin-top: 0px;
+  color: #74768a;
+`
+
+const Motivation = styled.p`
+  display: initial;
+
+  @media (max-width: 700px) {
+    display: none;
+  }
+`
 
 const TimerBox = styled.section`
   width: 310px;
@@ -134,6 +270,11 @@ const TimerBox = styled.section`
 
   padding-top: 20px;
   padding-bottom: ${props => (props.optionsVisible ? '45px' : '10px')};
+
+  @media (max-width: 1000px) {
+    width: 280px;
+    margin: 95px 0px 70px;
+  }
 `
 
 const Monitor = styled.header`
@@ -148,6 +289,12 @@ const Monitor = styled.header`
   svg {
     position: relative;
   }
+
+  @media (max-width: 700px) {
+    margin-top: -5px;
+    margin-bottom: 5px;
+    width: 200px;
+  }
 `
 
 const Sonar = styled.div`
@@ -158,6 +305,11 @@ const Sonar = styled.div`
   top: 50%;
   margin-top: -3px;
   transform: translate(-50%, -50%);
+
+  @media (max-width: 700px) {
+    width: calc(100% - 32px);
+    height: calc(100% - 32px);
+  }
 `
 
 const Pulse = styled.div`
@@ -203,13 +355,33 @@ const Clock = styled.div`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+
+  @media (max-width: 700px) {
+    font-size: 30px;
+  }
+`
+
+const TimerHeader = styled.header`
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0px 20px;
+  box-sizing: border-box;
+`
+
+const Config = styled.div`
+  font-size: 18px;
+  color: #8e90a2;
+  padding-top: 3px;
+  padding-right: 7px;
+  cursor: pointer;
 `
 
 const Label = styled.div`
   text-align: center;
   box-sizing: border-box;
   padding: 5px 10px;
-  margin: 0 30px;
+  margin: 0 0;
   font-size: 14px;
   color: #8e90a2;
   font-weight: 100;
@@ -265,7 +437,7 @@ const Option = styled.li`
   cursor: pointer;
   transition: all 0.14s linear;
 
-  background-color: ${props => (props.active ? '#e85e6a' : 'transparent')};
+  background-color: ${props => (props.active ? '#d76b6b' : 'transparent')};
   color: ${props => (props.active ? '#ffffff' : '#8a8c94')};
   box-shadow: ${props =>
     !props.active && 'inset 0px 0px 0px 1px rgba(0,0,0,0.13)'};
@@ -336,6 +508,7 @@ const mapDispatchToProps = dispatch =>
   bindActionCreators(
     {
       decrement,
+      setConfig,
       setMode
     },
     dispatch
