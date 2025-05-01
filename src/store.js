@@ -10,7 +10,7 @@ const enhancers = []
 const persistConfig = {
   key: 'root',
   storage: storage,
-  blacklist: ['timer'],
+  blacklist: ['timer', 'app'],
   stateReconciler: autoMergeLevel2
 }
 const middleware = [thunk]

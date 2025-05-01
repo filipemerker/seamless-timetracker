@@ -3,7 +3,7 @@ import Immutable, { merge } from 'seamless-immutable'
 export const SET_EXPAND = 'app/SET_EXPAND'
 
 const initialState = Immutable({
-  expand: null
+  expand: 'timer'
 })
 
 export default (state = initialState, action) => {

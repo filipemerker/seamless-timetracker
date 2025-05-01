@@ -136,9 +136,12 @@ class App extends Component {
     return (
       <Main className="App">
         <TimerContainer expand={expand}>
-          <button onClick={() => setExpand(expand ? null : 'timer')}>
-            {expand}
-          </button>
+          <ExpandButton
+            showLess={expand === null}
+            onClick={() => setExpand(expand ? null : 'timer')}
+          >
+            {expand === 'timer' ? 'Show\nmore' : 'Show\nless'}
+          </ExpandButton>
           <Timer timerActions={timerActions} timerState={timerState} />
         </TimerContainer>
         <TasksContainer expand={expand}>
@@ -182,6 +185,37 @@ const TimerContainer = styled.section`
     ${props => props.expand !== 'timer' && 'height: auto;'};
     width: 100%;
     position: relative;
+  }
+`
+
+const ExpandButton = styled.button`
+  position: absolute;
+  right: 20px;
+  top: 45px;
+  transform: translateY(-50%);
+  background: linear-gradient(to bottom, #ea8379, #cf3845);
+  box-shadow: 0px 19px 20px -10px rgba(207, 56, 69, 0.38);
+  border-radius: 5px;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  white-space: pre-line;
+  animation: ${props => !props.showLess && 'rock 2s ease-in-out infinite'};
+  opacity: ${props => (props.showLess ? 0.6 : 1)};
+  color: #fff;
+
+  transition: all 0.3s ease;
+
+  @keyframes rock {
+    0% {
+      transform: translateY(-50%) translateX(0px);
+    }
+    50% {
+      transform: translateY(-50%) translateX(5px);
+    }
+    100% {
+      transform: translateY(-50%) translateX(0px);
+    }
   }
 `
 

@@ -40,7 +40,7 @@
     "eject": "react-scripts eject",
     "precommit": "lint-staged"
   },
-  "homepage": "/",
+  "homepage": "https://filipemerker.github.io/seamless-timetracker",
   "lint-staged": {
     "*.{js,json,css,md}": [
       "prettier --write",
